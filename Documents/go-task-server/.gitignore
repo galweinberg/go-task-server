@@ -1,0 +1,11 @@
+# Go build artifacts
+/task-server
+*.exe
+*.out
+
+# VSCode settings
+.vscode/
+
+# Logs and system files
+*.log
+.DS_Store
