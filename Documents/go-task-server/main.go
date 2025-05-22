@@ -104,19 +104,19 @@ type RoundRobinDispatcher struct {
 // dispatch for RRD
 func (nbd *RoundRobinDispatcher) Dispatch(t Task) {
 
-	fmt.Printf("📦 Dispatching task #%d with role: %s\n", t.ID, t.RequiredRole)
+	fmt.Printf(" Dispatching task #%d with role: %s\n", t.ID, t.RequiredRole)
 
 	for i := 0; i < len(nbd.Workers); i++ {
 		worker := nbd.Workers[nbd.next]
 		nbd.next = (nbd.next + 1) % len(nbd.Workers)
 
 		if worker.Role == t.RequiredRole {
-			fmt.Printf("➡️  Assigned to %s (%s)\n", worker.Name, worker.Role)
+			fmt.Printf("  Assigned to %s (%s)\n", worker.Name, worker.Role)
 			worker.TaskChan <- t
 			return
 		}
 	}
-	fmt.Printf("⚠️ No available worker found for role: %s\n", t.RequiredRole)
+	fmt.Printf(" No available worker found for role: %s\n", t.RequiredRole)
 	nbd.wg.Done()
 }
 
@@ -150,7 +150,7 @@ type Worker struct {
 	TaskChan chan Task
 }
 
-// start wroknig as a worker
+// start working as a worker
 func (w *Worker) Start(wg *sync.WaitGroup, server *Server) {
 	go func() {
 		for task := range w.TaskChan {
@@ -202,7 +202,7 @@ func main() {
 	srv := &http.Server{Addr: ":8080"}
 	http.HandleFunc("/task", server.handleTaskSubmission)
 	go func() {
-		log.Println("🔌 HTTP server on :8080")
+		log.Println(" HTTP server on :8080")
 		if err := srv.ListenAndServe(); err != http.ErrServerClosed {
 			log.Fatalf("HTTP server error: %v", err)
 		}
@@ -220,7 +220,7 @@ func main() {
 	dispWg.Wait()           // <- NEW: make sure Run() really ended
 
 	// --- 6. print final status ---------------------------------------
-	fmt.Println("📋 Final Task Statuses:")
+	fmt.Println(" Final Task Statuses:")
 	server.mu.Lock()
 	for id, status := range server.taskStatus {
 		fmt.Printf(" - Task #%d: %s\n", id, status)
@@ -235,5 +235,5 @@ func main() {
 	defer cancel()
 	srv.Shutdown(ctx)
 
-	fmt.Println("✅ All tasks completed. Server shutting down.")
+	fmt.Println(" All tasks completed. Server shutting down.")
 }
