@@ -1,48 +1,85 @@
-# Concurrent Task Dispatcher in Go
+# 🧠 Go Task Server (Kubernetes-ready)
 
-![Go CI](https://github.com/galweinberg/go-task-server/actions/workflows/go.yml/badge.svg)
+A lightweight task dispatch server written in Go, featuring:
+- Role-based task routing
+- In-memory task tracking
+- Concurrency with goroutines
+- Kubernetes deployment via Docker + Minikube
 
-This project implements a basic concurrent task dispatching system in Go. It includes a round-robin dispatcher, a pool of role-based workers, and an HTTP interface for submitting tasks.
+---
 
-## Features
+## 🚀 Features
 
-- Role-based task dispatching using a round-robin strategy
-- Worker pool with concurrent task execution
-- Internal and HTTP-based task submission
-- Thread-safe task status tracking with mutexes
-- Graceful shutdown with proper cleanup
-- Simple HTTP API for integration and testing
+- ✅ Submit tasks via `/task` (HTTP POST)
+- ✅ Track task status via `/status?id=<task_id>`
+- ✅ Liveness check at `/healthz`
+- ✅ Round-robin dispatcher with worker goroutines
+- ✅ Dockerized and deployed on Kubernetes (via Minikube)
 
-## Components
+---
 
-- Server: Manages task queue, dispatching, and task status
-- Dispatcher: Assigns tasks to available workers based on required role
-- Worker: Goroutines that process tasks and update task status
-- Task: Struct containing task metadata such as ID, description, and required role
+## 📦 Technologies Used
 
-## Usage
+- [Go (Golang)](https://golang.org/)
+- [Docker](https://www.docker.com/)
+- [Kubernetes](https://kubernetes.io/)
+- [Minikube](https://minikube.sigs.k8s.io/docs/)
 
-Start the server:
+---
 
-```bash
-go run main.go
+## 📁 Project Structure
 
-Submit a task via HTTP:
+.
+├── cmd/server/ # Main Go server logic
+├── k8s/ # Kubernetes manifests
+│ ├── deployment.yaml
+│ └── service.yaml
+├── Dockerfile
+├── go.mod / go.sum
+└── README.md
 
+
+
+---
+
+## ⚙️ Usage
+
+### 🐳 Build Docker image (inside Minikube)
+eval $(minikube docker-env)
+docker build -t go-server:latest .
+☸️ Deploy to Kubernetes
+
+kubectl apply -f k8s/deployment.yaml
+kubectl apply -f k8s/service.yaml
+🌐 Access Locally
+
+kubectl port-forward svc/task-server-service 8080:8080
+📬 API Endpoints
+POST /task
+Submit a new task:
+
+{
+  "ID": 1,
+  "Description": "Deploy app",
+  "RequiredRole": "DevOps"
+}
+GET /status?id=1
+Returns:
+
+
+Task #1 status: done
+GET /healthz
+Returns:
+
+
+OK
+🧪 Test Example (with curl)
 
 curl -X POST http://localhost:8080/task \
   -H "Content-Type: application/json" \
-  -d '{"ID": 3, "Description": "Restart service", "RequiredRole": "DevOps"}'
-Tasks can also be submitted internally within the main function.
+  -d '{"ID":7,"Description":"retry","RequiredRole":"DevOps"}'
 
-
-
-HTTP API
-POST /task: Submits a new task with JSON payload
-
-Example body:
-{
-  "ID": 4,
-  "Description": "Backup logs",
-  "RequiredRole": "DevOps"
-}
+curl http://localhost:8080/status?id=7
+curl http://localhost:8080/healthz
+📌 Author
+Developed by Gal Weinberg
