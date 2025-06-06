@@ -1,4 +1,11 @@
-# 🧠 Go Task Server (Kubernetes-ready)
+# Go Task Server (Kubernetes-ready)
+![CI](https://github.com/galweinberg/go-task-server/actions/workflows/testing.yml/badge.svg)
+
+![Go Version](https://img.shields.io/badge/go-1.22-blue)
+
+
+[![Go Report Card](https://goreportcard.com/badge/github.com/galweinberg/go-task-server)](https://goreportcard.com/report/github.com/galweinberg/go-task-server)
+
 
 A lightweight task dispatch server written in Go, featuring:
 - Role-based task routing
@@ -31,11 +38,15 @@ A lightweight task dispatch server written in Go, featuring:
 
 .
 ├── cmd/server/ # Main Go server logic
+
 ├── k8s/ # Kubernetes manifests
 │ ├── deployment.yaml
 │ └── service.yaml
+
 ├── Dockerfile
+
 ├── go.mod / go.sum
+
 └── README.md
 
 
@@ -46,16 +57,23 @@ A lightweight task dispatch server written in Go, featuring:
 
 ### 🐳 Build Docker image (inside Minikube)
 eval $(minikube docker-env)
+
 docker build -t go-server:latest .
+
 ☸️ Deploy to Kubernetes
 
 kubectl apply -f k8s/deployment.yaml
+
 kubectl apply -f k8s/service.yaml
+
 🌐 Access Locally
 
 kubectl port-forward svc/task-server-service 8080:8080
+
 📬 API Endpoints
+
 POST /task
+
 Submit a new task:
 
 {
@@ -64,15 +82,19 @@ Submit a new task:
   "RequiredRole": "DevOps"
 }
 GET /status?id=1
+
 Returns:
 
 
 Task #1 status: done
+
 GET /healthz
+
 Returns:
 
 
 OK
+
 🧪 Test Example (with curl)
 
 curl -X POST http://localhost:8080/task \
@@ -81,5 +103,8 @@ curl -X POST http://localhost:8080/task \
 
 curl http://localhost:8080/status?id=7
 curl http://localhost:8080/healthz
-📌 Author
+
+
+📌 Author-
+
 Developed by Gal Weinberg
