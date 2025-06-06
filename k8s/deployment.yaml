@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: task-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: task-server
+  template:
+    metadata:
+      labels:
+        app: task-server
+    spec:
+      containers:
+        - name: task-server
+          image: go-server:latest
+          ports:
+            - containerPort: 8080

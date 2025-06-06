@@ -1,7 +1,7 @@
 package main
 
 import (
-	"strconv"
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -111,12 +111,12 @@ func (nbd *RoundRobinDispatcher) Dispatch(t Task) {
 		nbd.next = (nbd.next + 1) % len(nbd.Workers)
 
 		if worker.Role == t.RequiredRole {
-			fmt.Printf("  Assigned to %s (%s)\n", worker.Name, worker.Role)
+			fmt.Printf("➡️  Assigned to %s (%s)\n", worker.Name, worker.Role)
 			worker.TaskChan <- t
 			return
 		}
 	}
-	fmt.Printf(" No available worker found for role: %s\n", t.RequiredRole)
+	fmt.Printf("No available worker found for role: %s\n", t.RequiredRole)
 	nbd.wg.Done()
 }
 
@@ -150,7 +150,7 @@ type Worker struct {
 	TaskChan chan Task
 }
 
-// start working as a worker
+// start wroknig as a worker
 func (w *Worker) Start(wg *sync.WaitGroup, server *Server) {
 	go func() {
 		for task := range w.TaskChan {
@@ -179,62 +179,61 @@ type Task struct {
 	Done         bool
 }
 
-func (s *Server) handleTaskStatus(w http.ResponseWriter, r *http.Request) {
-	idStr := r.URL.Query().Get("id")
-	id, err := strconv.Atoi(idStr)
-	if err != nil {
-		http.Error(w, "invalid id", http.StatusBadRequest)
-		return
-	}
-
-	s.mu.Lock()
-	status, ok := s.taskStatus[id]
-	s.mu.Unlock()
-
-	if !ok {
-		http.Error(w, "task not found", http.StatusNotFound)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "Task #%d status: %s", id, status)
-}
-
-
-
-
 func main() {
-	wg := sync.WaitGroup{}
-
+	// --- 0. plumbing --------------------------------------------------
+	wg := sync.WaitGroup{} // counts *tasks*
 	server := &Server{
 		taskQueue:  make(chan Task, 20),
 		taskStatus: make(map[int]string),
 		wg:         &wg,
 	}
-
 	dispatcher := NewRoundRobinDispatcher(3, &wg, server)
 	server.dispatcher = dispatcher
 
-	// Dispatcher loop
-	go server.Run()
-
-	// HTTP endpoints
-	http.HandleFunc("/task", server.handleTaskSubmission)
-	http.HandleFunc("/status", server.handleTaskStatus)
-	http.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("OK"))
-	})
-
-	// Start HTTP server
-	srv := &http.Server{Addr: ":8080"}
+	// --- 1. start the dispatcher loop (adds NEW WaitGroup) -----------
+	dispWg := &sync.WaitGroup{} // counts the Run() goroutine
+	dispWg.Add(1)
 	go func() {
-		log.Println("HTTP server started on :8080")
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		server.Run() // <- exits when taskQueue is closed
+		dispWg.Done()
+	}()
+
+	// --- 2. start the HTTP server ------------------------------------
+	srv := &http.Server{Addr: ":8080"}
+	http.HandleFunc("/task", server.handleTaskSubmission)
+	go func() {
+		log.Println("🔌 HTTP server on :8080")
+		if err := srv.ListenAndServe(); err != http.ErrServerClosed {
 			log.Fatalf("HTTP server error: %v", err)
 		}
 	}()
 
-	// Keep the server alive
-	select {}
+	// --- 3. enqueue internal tasks -----------------------------------
+	server.SubmitInternal(Task{ID: 1, Description: "Deploy", RequiredRole: "DevOps"})
+	server.SubmitInternal(Task{ID: 2, Description: "Clean logs", RequiredRole: "DevOps"})
+
+	// --- 4. wait until ALL tasks are done ----------------------------
+	wg.Wait() // workers call wg.Done()
+
+	// --- 5. close queues & wait for Run() to finish ------------------
+	close(server.taskQueue) // lets server.Run() break out of its loop
+	dispWg.Wait()           // <- NEW: make sure Run() really ended
+
+	// --- 6. print final status ---------------------------------------
+	fmt.Println("📋 Final Task Statuses:")
+	server.mu.Lock()
+	for id, status := range server.taskStatus {
+		fmt.Printf(" - Task #%d: %s\n", id, status)
+	}
+	server.mu.Unlock()
+
+	// --- 7. graceful shutdown of workers & HTTP server ---------------
+	for _, w := range dispatcher.Workers {
+		close(w.TaskChan)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	srv.Shutdown(ctx)
+
+	fmt.Println("✅ All tasks completed. Server shutting down.")
 }

@@ -4,11 +4,14 @@
     WORKDIR /app
     
     COPY go.mod ./
+    #COPY go.sum ./
+
+    RUN go mod download
+
     COPY . .
+
     
-    RUN go build -o task-server .
-    
-    RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o task-server .
+    RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o task-server ./cmd/server
 
     # -------- Runtime stage --------
     FROM scratch
