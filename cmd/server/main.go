@@ -29,7 +29,6 @@ func (c *BasicClient) sendTask(t Task) {
 type Server struct {
 	dispatcher Dispatcher
 	taskQueue  chan Task
-
 	taskStatus map[int]string
 	mu         sync.Mutex
 	wg         *sync.WaitGroup

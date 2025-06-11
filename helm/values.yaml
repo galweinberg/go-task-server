@@ -1,0 +1,9 @@
+replicaCount: 1
+
+image:
+  repository: go-server
+  tag: latest
+
+service:
+  type: NodePort
+  port: 8080
