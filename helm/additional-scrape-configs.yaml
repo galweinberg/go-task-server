@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: additional-scrape-configs
+  namespace: monitoring
+type: Opaque
+stringData:
+  additional-scrape-configs.yaml: |
+    - job_name: 'go-task-server'
+      static_configs:
+        - targets: ['task-server-service.default.svc.cluster.local:8080']

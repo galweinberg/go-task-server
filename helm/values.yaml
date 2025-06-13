@@ -3,6 +3,7 @@ replicaCount: 1
 image:
   repository: go-server
   tag: latest
+  pullPolicy: IfNotPresent
 
 service:
   type: NodePort

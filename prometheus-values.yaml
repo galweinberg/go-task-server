@@ -1,0 +1,5 @@
+server:
+  extraScrapeConfigs:
+    - job_name: 'go-task-server'
+      static_configs:
+        - targets: ['task-server-service.default.svc.cluster.local:8080']
