@@ -34,22 +34,23 @@ A lightweight task dispatch server written in Go, featuring:
 
 ---
 
-## 📁 Project Structure
+📁 Project Structure
+bash
+Copy
+Edit
+go-task-server/
 
-.
-├── cmd/server/ # Main Go server logic
+├── cmd/server/  # Entry point (main.go)
 
-├── k8s/ # Kubernetes manifests
-│ ├── deployment.yaml
-│ └── service.yaml
+├── internal/   # Modular packages: dispatcher, handlers, metrics, etc.
+
+├── helm/    # Helm chart or raw manifests
 
 ├── Dockerfile
 
 ├── go.mod / go.sum
 
 └── README.md
-
-
 
 ---
 
