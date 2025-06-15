@@ -54,6 +54,7 @@ go-task-server/
 ├── helm/    # Helm chart or raw manifests
 
 │ ├── templates/
+
 │ └── values.yaml
 
 ├── Dockerfile
