@@ -11,7 +11,8 @@ A lightweight task dispatch server written in Go, featuring:
 - Role-based task routing
 - In-memory task tracking
 - Concurrency with goroutines
-- Kubernetes deployment via Docker + Minikube
+- Kubernetes deployment via Docker + Helm + Minikube
+- Prometheus metrics and Grafana dashboards for observability
 
 ---
 
@@ -22,6 +23,9 @@ A lightweight task dispatch server written in Go, featuring:
 - ✅ Liveness check at `/healthz`
 - ✅ Round-robin dispatcher with worker goroutines
 - ✅ Dockerized and deployed on Kubernetes (via Minikube)
+- ✅ Helm chart for templated deployment
+- ✅ Prometheus metrics exposed via `/metrics`
+- ✅ Grafana dashboards for real-time observability
 
 ---
 
@@ -30,7 +34,10 @@ A lightweight task dispatch server written in Go, featuring:
 - [Go (Golang)](https://golang.org/)
 - [Docker](https://www.docker.com/)
 - [Kubernetes](https://kubernetes.io/)
+- [Helm](https://helm.sh/)
 - [Minikube](https://minikube.sigs.k8s.io/docs/)
+- [Prometheus](https://prometheus.io/)
+- [Grafana](https://grafana.com/)
 
 ---
 
@@ -45,6 +52,9 @@ go-task-server/
 ├── internal/   # Modular packages: dispatcher, handlers, metrics, etc.
 
 ├── helm/    # Helm chart or raw manifests
+
+│ ├── templates/
+│ └── values.yaml
 
 ├── Dockerfile
 
@@ -95,6 +105,37 @@ Returns:
 
 
 OK
+
+📊 Observability
+This project exposes Prometheus-compatible metrics and supports Grafana dashboards.
+
+/metrics: exposes counters like:
+
+task_submitted_total
+
+http_requests_total{path=...}
+
+📈 Monitoring Stack
+Component	Purpose
+
+Prometheus	Scrapes metrics from the Go server
+
+Grafana	Visualizes metrics via dashboards
+
+Helm	Deploys both via kube-prometheus-stack
+
+🔧 Access Prometheus & Grafana (after Helm install)
+
+kubectl port-forward svc/prometheus-kube-prometheus-prometheus 9090
+
+kubectl port-forward svc/grafana 3000
+
+Default Grafana credentials:
+
+User: admin
+
+Pass: prom-operator
+
 
 🧪 Test Example (with curl)
 
