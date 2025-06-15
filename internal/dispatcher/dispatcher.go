@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"sync"
 
-	"goProj/internal/model"
-	"goProj/internal/worker"
+	"github.com/galweinberg/go-task-server/internal/model"
+	"github.com/galweinberg/go-task-server/internal/worker"
 )
 
 // Dispatcher defines the interface for task dispatchers

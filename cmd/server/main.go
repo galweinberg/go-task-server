@@ -8,11 +8,11 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
-	"goProj/internal/dispatcher"
-	"goProj/internal/handlers"
-	"goProj/internal/metrics"
-	"goProj/internal/model"
-	"goProj/internal/server"
+    "github.com/galweinberg/go-task-server/internal/dispatcher"
+    "github.com/galweinberg/go-task-server/internal/handlers"
+    "github.com/galweinberg/go-task-server/internal/metrics"
+    "github.com/galweinberg/go-task-server/internal/model"
+    "github.com/galweinberg/go-task-server/internal/server"
 )
 
 func main() {
@@ -47,6 +47,7 @@ func main() {
 		Addr:    ":8080",
 		Handler: mux,
 	}
+	log.Println("✅ Registered /metrics and starting server")
 
 	log.Println("HTTP server started on :8080")
 	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {

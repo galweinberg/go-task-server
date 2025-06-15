@@ -4,8 +4,8 @@ package server
 import (
 	"sync"
 
-	"goProj/internal/dispatcher"
-	"goProj/internal/model"
+	"github.com/galweinberg/go-task-server/internal/dispatcher"
+	"github.com/galweinberg/go-task-server/internal/model"
 )
 
 // Server struct manages tasks and dispatching

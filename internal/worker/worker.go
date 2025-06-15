@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"goProj/internal/model"
+	"github.com/galweinberg/go-task-server/internal/model"
 )
 
 // Worker holds metadata and a channel to receive tasks

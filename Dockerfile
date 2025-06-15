@@ -10,6 +10,8 @@
 
     COPY . .
 
+    RUN echo "---- MAIN GO CONTENT ----" && cat cmd/server/main.go
+
     
     RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o task-server ./cmd/server
 

@@ -1,4 +1,4 @@
-module goProj
+module github.com/galweinberg/go-task-server
 
 go 1.22
 

@@ -2,7 +2,16 @@
 package metrics
 
 import (
+	"log"
 	"github.com/prometheus/client_golang/prometheus"
+)
+var (
+	taskSubmitted = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Name: "task_submitted_total",
+			Help: "Total number of tasks submitted by clients",
+		},
+	)
 )
 
 var (
@@ -18,6 +27,16 @@ var (
 // Register registers all Prometheus metrics
 func Register() {
 	prometheus.MustRegister(httpRequests)
+	prometheus.MustRegister(taskSubmitted)
+
+	// Ensure the counter is initialized so Prometheus sees it
+	taskSubmitted.Add(0)
+}
+
+
+func IncSubmitted() {
+	taskSubmitted.Inc()
+log.Println("🔥 IncSubmitted called")
 }
 
 // Inc increments request counter for a specific path

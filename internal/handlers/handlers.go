@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"goProj/internal/metrics"
-	"goProj/internal/model"
+	"github.com/galweinberg/go-task-server/internal/metrics"
+	"github.com/galweinberg/go-task-server/internal/model"
 )
 
 // ServerInterface defines the interface needed from the Server
@@ -32,6 +32,8 @@ func RegisterRoutes(mux *http.ServeMux, server ServerInterface) {
 			http.Error(w, "invalid JSON", http.StatusBadRequest)
 			return
 		}
+		metrics.IncSubmitted() // Increments task_submitted_total
+
 
 		server.SubmitTask(task)
 		w.WriteHeader(http.StatusAccepted)
