@@ -32,6 +32,13 @@ func RegisterRoutes(mux *http.ServeMux, server ServerInterface) {
 			http.Error(w, "invalid JSON", http.StatusBadRequest)
 			return
 		}
+
+		if task.ID == 0 || task.RequiredRole == "" || task.Description == "" {
+			http.Error(w, "invalid task submission", http.StatusBadRequest)
+			return
+			}
+
+
 		metrics.IncSubmitted() // Increments task_submitted_total
 
 

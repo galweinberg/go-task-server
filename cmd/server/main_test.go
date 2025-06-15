@@ -10,10 +10,10 @@ import (
 	"testing"
 	"time"
 
-	"goProj/internal/dispatcher"
-	"goProj/internal/handlers"
-	"goProj/internal/model"
-	"goProj/internal/server"
+	"github.com/galweinberg/go-task-server/internal/dispatcher"
+	"github.com/galweinberg/go-task-server/internal/handlers"
+	"github.com/galweinberg/go-task-server/internal/model"
+	"github.com/galweinberg/go-task-server/internal/server"
 )
 
 func startTestServer() *http.Server {
@@ -24,7 +24,7 @@ func startTestServer() *http.Server {
 		WG:         wg,
 	}
 
-	s.Dispatcher = dispatcher.NewRoundRobinDispatcher(1, wg, s)
+	s.Dispatcher = dispatcher.NewRoundRobinDispatcher(5, wg, s)
 	go s.Run()
 
 	mux := http.NewServeMux()
@@ -100,3 +100,98 @@ func TestHealthCheck(t *testing.T) {
 		t.Fatalf("Expected 200 OK, got %d", resp.StatusCode)
 	}
 }
+
+	func TestEmptyTaskSubmission(t *testing.T) {
+	server := startTestServer()
+	defer server.Close()
+
+	resp, err := http.Post("http://localhost:8081/task", "application/json", bytes.NewBuffer([]byte("{}")))
+	if err != nil {
+		t.Fatalf("Request failed: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusBadRequest {
+		t.Fatalf("Expected 400 Bad Request, got %d", resp.StatusCode)
+	}
+}
+
+
+func TestUnknownTaskStatus(t *testing.T) {
+	server := startTestServer()
+	defer server.Close()
+
+	resp, err := http.Get("http://localhost:8081/status?id=999999")
+	if err != nil {
+		t.Fatalf("Request failed: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusNotFound {
+		t.Fatalf("Expected 404 Not Found, got %d", resp.StatusCode)
+	}
+}
+
+func TestConcurrentTaskSubmission(t *testing.T) {
+	server := startTestServer()
+	defer server.Close()
+
+	var wg sync.WaitGroup
+	numTasks := 5
+	taskIDs := make([]int, numTasks)
+
+	// Launch concurrent submissions
+	for i := 0; i < numTasks; i++ {
+		wg.Add(1)
+		taskID := 200 + i
+		taskIDs[i] = taskID
+
+		go func(id int) {
+			defer wg.Done()
+			task := model.Task{
+				ID:           id,
+				Description:  "Concurrent task " + strconv.Itoa(id),
+				Priority:     1,
+				RequiredRole: "DevOps",
+				Done:         false,
+			}
+
+			data, _ := json.Marshal(task)
+			resp, err := http.Post("http://localhost:8081/task", "application/json", bytes.NewBuffer(data))
+			if err != nil {
+				t.Errorf("Failed to submit task %d: %v", id, err)
+				return
+			}
+			defer resp.Body.Close()
+
+			if resp.StatusCode != http.StatusAccepted {
+				t.Errorf("Task %d submission failed with status: %d", id, resp.StatusCode)
+			}
+		}(taskID)
+	}
+
+	wg.Wait()
+
+	// Give workers time to process
+	time.Sleep(3 * time.Second)
+
+	// Verify all tasks marked as done
+	for _, id := range taskIDs {
+		resp, err := http.Get("http://localhost:8081/status?id=" + strconv.Itoa(id))
+		if err != nil {
+			t.Errorf("Failed to get status for task %d: %v", id, err)
+			continue
+		}
+		body, _ := io.ReadAll(resp.Body)
+		resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			t.Errorf("Task %d status returned %d", id, resp.StatusCode)
+		} else if !bytes.Contains(body, []byte("done")) {
+			t.Errorf("Task %d expected to be done, got response: %s", id, string(body))
+		}
+	}
+}
+
+
+
