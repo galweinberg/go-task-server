@@ -72,17 +72,17 @@ eval $(minikube docker-env)
 
 docker build -t go-server:latest .
 
-☸️ Deploy to Kubernetes
+### ☸️ Deploy to Kubernetes
 
 kubectl apply -f k8s/deployment.yaml
 
 kubectl apply -f k8s/service.yaml
 
-🌐 Access Locally
+### 🌐 Access Locally
 
 kubectl port-forward svc/task-server-service 8080:8080
 
-📬 API Endpoints
+### 📬 API Endpoints
 
 POST /task
 
@@ -107,7 +107,7 @@ Returns:
 
 OK
 
-📊 Observability
+## 📊 Observability
 This project exposes Prometheus-compatible metrics and supports Grafana dashboards.
 
 /metrics: exposes counters like:
@@ -116,7 +116,7 @@ task_submitted_total
 
 http_requests_total{path=...}
 
-📈 Monitoring Stack
+### 📈 Monitoring Stack
 Component	Purpose
 
 Prometheus	Scrapes metrics from the Go server
@@ -125,7 +125,7 @@ Grafana	Visualizes metrics via dashboards
 
 Helm	Deploys both via kube-prometheus-stack
 
-🔧 Access Prometheus & Grafana (after Helm install)
+### 🔧 Access Prometheus & Grafana (after Helm install)
 
 kubectl port-forward svc/prometheus-kube-prometheus-prometheus 9090
 
@@ -138,7 +138,7 @@ User: admin
 Pass: prom-operator
 
 
-🧪 Test Example (with curl)
+## 🧪 Test Example (with curl)
 
 curl -X POST http://localhost:8080/task \
   -H "Content-Type: application/json" \
@@ -148,6 +148,6 @@ curl http://localhost:8080/status?id=7
 curl http://localhost:8080/healthz
 
 
-📌 Author-
+### 📌 Author-
 
 Developed by Gal Weinberg
