@@ -59,7 +59,6 @@ func RegisterRoutes(mux *http.ServeMux, server ServerInterface) {
 
 		json.NewEncoder(w).Encode(map[string]int{"task_id": task.ID})
 	})
-}
 
 	mux.HandleFunc("/status", func(w http.ResponseWriter, r *http.Request) {
 		metrics.Inc("/status")
