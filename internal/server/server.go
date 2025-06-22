@@ -8,6 +8,18 @@ import (
 	"github.com/galweinberg/go-task-server/internal/model"
 )
 
+var (
+    currentTaskID int
+    taskIDMutex   sync.Mutex
+)
+
+func generateTaskID() int {
+    taskIDMutex.Lock()
+    defer taskIDMutex.Unlock()
+    currentTaskID++
+    return currentTaskID
+}
+
 // Server struct manages tasks and dispatching
 type Server struct {
 	Dispatcher dispatcher.Dispatcher

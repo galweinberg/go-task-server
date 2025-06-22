@@ -47,7 +47,7 @@ func main() {
 		Addr:    ":8080",
 		Handler: mux,
 	}
-	log.Println("✅ Registered /metrics and starting server")
+	log.Println(" Registered /metrics and starting server")
 
 	log.Println("HTTP server started on :8080")
 	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {

@@ -33,11 +33,12 @@ func RegisterRoutes(mux *http.ServeMux, server ServerInterface) {
 			return
 		}
 
-		if task.ID == 0 || task.RequiredRole == "" || task.Description == "" {
+		if  task.RequiredRole == "" || task.Description == "" {
 			http.Error(w, "invalid task submission", http.StatusBadRequest)
 			return
 			}
 
+		task.ID = generateTaskID()
 
 		metrics.IncSubmitted() // Increments task_submitted_total
 
