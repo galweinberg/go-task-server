@@ -44,20 +44,22 @@ func RegisterRoutes(mux *http.ServeMux, server ServerInterface) {
 			return
 		}
 
-		if  task.RequiredRole == "" || task.Description == "" {
+		if task.RequiredRole == "" || task.Description == "" {
 			http.Error(w, "invalid task submission", http.StatusBadRequest)
 			return
-			}
+		}
 
 		task.ID = generateTaskID()
+		metrics.IncSubmitted()
 
-		metrics.IncSubmitted() // Increments task_submitted_total
-
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusAccepted)
 
 		server.SubmitTask(task)
-		w.WriteHeader(http.StatusAccepted)
-		fmt.Fprintf(w, "Task #%d accepted", task.ID)
+
+		json.NewEncoder(w).Encode(map[string]int{"task_id": task.ID})
 	})
+}
 
 	mux.HandleFunc("/status", func(w http.ResponseWriter, r *http.Request) {
 		metrics.Inc("/status")
