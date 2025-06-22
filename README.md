@@ -41,10 +41,8 @@ A lightweight task dispatch server written in Go, featuring:
 
 ---
 
-📁 Project Structure
-bash
-Copy
-Edit
+## 📁 Project Structure
+
 go-task-server/
 
 ├── cmd/server/  # Entry point (main.go)
@@ -116,14 +114,32 @@ task_submitted_total
 
 http_requests_total{path=...}
 
+
+## 📈 Metrics Visualization
+
+The system tracks total task submissions in real-time using Prometheus and Grafana.
+
+### Tasks submitted over time with thresholds:
+## Total Tasks Submitted - yellow zone
+![image](https://github.com/user-attachments/assets/f2d42741-19e8-484d-a2d8-3b263a7f8eb0)
+
+
+
+## Total Tasks Submitted - Under Load - Red zone 
+![image](https://github.com/user-attachments/assets/4424be0d-4681-4733-8a28-a942dcab0c91)
+
+
+Thresholds help visualize increasing load: green (OK), yellow (light warning), light orange (warning), dark orange (serious warning), red (high load).
+
+
+
 ### 📈 Monitoring Stack
-Component	Purpose
 
-Prometheus	Scrapes metrics from the Go server
-
-Grafana	Visualizes metrics via dashboards
-
-Helm	Deploys both via kube-prometheus-stack
+| Component   | Purpose                              |
+|-------------|---------------------------------------|
+| Prometheus  | Scrapes metrics from the Go server    |
+| Grafana     | Visualizes metrics via dashboards     |
+| Helm        | Deploys monitoring stack via Helm     |
 
 ### 🔧 Access Prometheus & Grafana (after Helm install)
 
@@ -142,7 +158,7 @@ Pass: prom-operator
 
 curl -X POST http://localhost:8080/task \
   -H "Content-Type: application/json" \
-  -d '{"ID":7,"Description":"retry","RequiredRole":"DevOps"}'
+  -d '{"Description":"retry","RequiredRole":"DevOps"}'
 
 curl http://localhost:8080/status?id=7
 curl http://localhost:8080/healthz
