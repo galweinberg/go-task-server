@@ -132,6 +132,7 @@ func TestUnknownTaskStatus(t *testing.T) {
 	}
 }
 
+
 func TestConcurrentTaskSubmission(t *testing.T) {
 	server := startTestServer()
 	defer server.Close()
@@ -143,14 +144,12 @@ func TestConcurrentTaskSubmission(t *testing.T) {
 	// Launch concurrent submissions
 	for i := 0; i < numTasks; i++ {
 		wg.Add(1)
-		taskID := 200 + i
-		taskIDs[i] = taskID
 
-		go func(id int) {
+		go func(i int) {
 			defer wg.Done()
+
 			task := model.Task{
-				ID:           id,
-				Description:  "Concurrent task " + strconv.Itoa(id),
+				Description:  "Concurrent task",
 				Priority:     1,
 				RequiredRole: "DevOps",
 				Done:         false,
@@ -159,15 +158,28 @@ func TestConcurrentTaskSubmission(t *testing.T) {
 			data, _ := json.Marshal(task)
 			resp, err := http.Post("http://localhost:8081/task", "application/json", bytes.NewBuffer(data))
 			if err != nil {
-				t.Errorf("Failed to submit task %d: %v", id, err)
+				t.Errorf("Failed to submit task %d: %v", i, err)
 				return
 			}
 			defer resp.Body.Close()
 
 			if resp.StatusCode != http.StatusAccepted {
-				t.Errorf("Task %d submission failed with status: %d", id, resp.StatusCode)
+				t.Errorf("Task submission failed with status: %d", resp.StatusCode)
+				return
 			}
-		}(taskID)
+
+			// Parse server-assigned ID from JSON response
+			var result struct {
+				TaskID int `json:"task_id"`
+			}
+			body, _ := io.ReadAll(resp.Body)
+			if err := json.Unmarshal(body, &result); err != nil {
+				t.Errorf("Failed to parse task_id from response: %v", err)
+				return
+			}
+
+			taskIDs[i] = result.TaskID
+		}(i)
 	}
 
 	wg.Wait()
@@ -192,6 +204,3 @@ func TestConcurrentTaskSubmission(t *testing.T) {
 		}
 	}
 }
-
-
-
