@@ -6,10 +6,21 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"sync"
 
 	"github.com/galweinberg/go-task-server/internal/metrics"
 	"github.com/galweinberg/go-task-server/internal/model"
 )
+
+var taskCounter int
+var mu sync.Mutex
+
+func generateTaskID() int {
+	mu.Lock()
+	defer mu.Unlock()
+	taskCounter++
+	return taskCounter
+}
 
 // ServerInterface defines the interface needed from the Server
 type ServerInterface interface {
