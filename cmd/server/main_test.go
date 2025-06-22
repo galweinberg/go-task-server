@@ -47,8 +47,8 @@ func TestTaskLifecycle(t *testing.T) {
 	server := startTestServer()
 	defer server.Close()
 
+	// Submit a task (without client-specified ID)
 	task := model.Task{
-		ID:           101,
 		Description:  "Integration test",
 		Priority:     1,
 		RequiredRole: "DevOps",
@@ -67,10 +67,20 @@ func TestTaskLifecycle(t *testing.T) {
 		t.Fatalf("Unexpected response: %s", string(body))
 	}
 
+	// Read the returned task_id
+	var result struct {
+		TaskID int `json:"task_id"`
+	}
+	body, _ := io.ReadAll(resp.Body)
+	if err := json.Unmarshal(body, &result); err != nil {
+		t.Fatalf("Failed to parse task_id from response: %v", err)
+	}
+
 	// Give worker time to finish
 	time.Sleep(2 * time.Second)
 
-	statusResp, err := http.Get("http://localhost:8081/status?id=" + strconv.Itoa(task.ID))
+	// Query status using the server-assigned task ID
+	statusResp, err := http.Get("http://localhost:8081/status?id=" + strconv.Itoa(result.TaskID))
 	if err != nil {
 		t.Fatalf("Failed to get task status: %v", err)
 	}
@@ -80,11 +90,12 @@ func TestTaskLifecycle(t *testing.T) {
 		t.Fatalf("Expected 200 OK, got %d", statusResp.StatusCode)
 	}
 
-	body, _ := io.ReadAll(statusResp.Body)
+	body, _ = io.ReadAll(statusResp.Body)
 	if string(body) == "" || !bytes.Contains(body, []byte("done")) {
 		t.Errorf("Expected task to be done, got response: %s", string(body))
 	}
 }
+
 
 func TestHealthCheck(t *testing.T) {
 	server := startTestServer()
