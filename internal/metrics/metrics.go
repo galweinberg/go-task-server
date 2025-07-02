@@ -36,7 +36,7 @@ func Register() {
 
 func IncSubmitted() {
 	taskSubmitted.Inc()
-log.Println("🔥 IncSubmitted called")
+log.Println(" IncSubmitted called")
 }
 
 // Inc increments request counter for a specific path
